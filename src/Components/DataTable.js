@@ -13,7 +13,7 @@ class DataTable extends  React.Component {
 			)
 		})
 
-		const headingRow = (
+		const headingRow = (	
 			<tr>
 				{headings}
 			</tr>

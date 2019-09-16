@@ -59,6 +59,8 @@ const InputHandle = (props) => {
 						'Content-Type': 'multiparts/form-data'
 					}
 				});
+				postResult = res.data
+				
 				isPostSuccessful = true;
 			} catch(err) {
 				if(err.response.status === 500) {
