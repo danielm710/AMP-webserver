@@ -1,0 +1,54 @@
+a {
+	text-decoration: none;
+	color: #000;
+}
+
+a:visited {
+	color: green;
+}
+
+a:hover {
+	color: red;
+}
+
+a:active {
+	color: yellow;
+}
+
+.site-header h1 {
+	text-align: center;
+	background-image: linear-gradient(to right, red, yellow);
+	font-size: 50px;
+	font-family: Bookman, Georgia, "Time New Roman"; 
+	padding: 15px 0px 15px 0px;
+}
+
+.amp-form {
+	text-align: center;
+}
+
+.wrapper {
+	margin: 20px 0 20px 0;
+}
+
+textarea {
+	resize: none;
+}
+
+.site-footer {
+	background-color: #303030;
+	overflow: auto;
+	color: white;
+}
+
+.footer-block {
+	float: left;
+	width: 50%;
+	box-sizing: border-box;
+	padding: 20px 10px 20px 10px;
+}
+
+.footer-block p {
+	padding-left: 10px;
+	margin-top: 20px;
+}
