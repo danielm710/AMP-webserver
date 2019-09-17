@@ -28,8 +28,7 @@ router.post('/upload', fileUpload(), (req, res) => {
 	let isUpload;
 	let fileContent;
 	// Access UUID from client side
-	//const uid = req.body.uid;
-	const uid = "c3ed-acb1";
+	const uid = req.body.uid;
 
 	const AMPBaseDir = path.join(__dirname, '../AMP-Predictor-Test');
 	const uploadDir = path.join(AMPBaseDir, 'data');
