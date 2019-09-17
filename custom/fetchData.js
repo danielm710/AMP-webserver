@@ -45,16 +45,16 @@ var moveFile = function(file, uploadDir, isUpload) {
 	}		
 }
 
-var getConfig = function(uploadPath) {
+var getConfig = function(uploadPath, configPath, uid) {
 	console.log("getConfig called!")
-	configPath = path.join(__dirname, '../luigi/test_amp.cfg');
+	
 	return new Promise((resolve, reject) => {
 		fs.readFile(configPath, 'utf8', (err, data) => {
 			if(err) {
 				reject(err);
 			}	
 			var newData = data.replace(/<DATA_PATH>/g, uploadPath)
-								.replace(/\\/g, '/');
+								.replace(/<UID_PATH>/g, uid);
 	
 			uploadDir = path.dirname(uploadPath);
 			fs.writeFile(path.join(uploadDir, 'config.cfg'),
@@ -71,32 +71,30 @@ var getConfig = function(uploadPath) {
 		
 }
 
-var runLuigi = function() {
+var runLuigi = function(scriptPath) {
 	console.log("runLuigi called!")
 	return new Promise((resolve, reject) => {
-		scriptPath = path.join(__dirname, '../luigi')
 		var options = {
 			mode: 'text',
 			scriptPath: scriptPath,
 			args: ['proteome_screening', '--local-scheduler']
 		};
-
-		PythonShell.run('amp_test.py', options, (err, results) => {
+		PythonShell.run('AMPpredictor.py', options, (err, results) => {
 			if (err) {
 				console.log(err)
 				reject(err);
 			} else {
 				resolve(true);
 			}
+			console.log(results)
 		});
-
 	});
+	console.log("runLuigi called!")
 };
 
-var checkLuigiDone = function() {
+var checkLuigiDone = function(donePath) {
 	console.log("checkLuigiDone called!")
 	return new Promise((resolve, reject) => {
-		const donePath = path.join('output', 'done');
 		fs.access(donePath, fs.F_OK, err => {
 			if(err) {
 				reject(err);
@@ -107,12 +105,9 @@ var checkLuigiDone = function() {
 	});
 }
 
-var fetchData = function() {
+var fetchData = function(predictionPath) {
 	console.log("fetchData called!")
 	return new Promise((resolve, reject) => {
-		const predictionPath = path.join('output', 
-										'prediction', 
-										'unlabeled_pos_prediction.json');
 
 		fs.readFile(predictionPath, 'utf-8', (err,content) => {
 			if(err) {

@@ -5,6 +5,7 @@ import {Redirect} from 'react-router-dom'
 import FileUpload from './FileUpload'
 import TextArea from './TextArea'
 import Result from '../Containers/Result/Result'
+import uuid from 'uuid'
 
 const InputHandle = (props) => {
 	const [file, setFile] = useState('');
@@ -14,69 +15,56 @@ const InputHandle = (props) => {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSubmit = async e => {
+		const randID = uuid.v4();
 		let isPostSuccessful = false;
 		setIsLoading(true);
 		e.preventDefault();
 		const formData = new FormData();
 		let postResult;
 
+		// Input not specified
 		if(fileName === 'Choose File' && sequenceString === '') {
 			alert("Input is empty...");
 			setIsLoading(false);
 			return;
 		}
 
-		// User uploads file. This will supercede textarea
+		// Pass UUID to server as a part of formData
+		// Can access it using req.body
+		formData.append('uid', randID);
+
+		// User uploads file. This will override textarea input
 		if(fileName !== 'Choose File') {
 			formData.append('file', file);
-			try {
-				const res = await axios.post('/upload', formData, {
-					headers: {
-						'Content-Type': 'multiparts/form-data'
-					}
-				});
-				postResult = res.data
-
-				isPostSuccessful = true;
-			} catch(err) {
-				if(err.response.status === 500) {
-					alert(err);
-					alert('There was a problem with the server');
-				} else if(err.response.status === 400) {
-					alert(err.response.data);
-				}
-			} finally {
-				setIsLoading(false);
-			}
-		}
-
-		// Sequence specified in the textarea
-		else {
+		} else { // Sequence specified in the textarea
 			formData.append('seq', sequenceString)
-			try {
-				const res = await axios.post('/upload', formData, {
-					headers: {
-						'Content-Type': 'multiparts/form-data'
-					}
-				});
-				postResult = res.data
-				
-				isPostSuccessful = true;
-			} catch(err) {
-				if(err.response.status === 500) {
-					console.log('There was a problem with the server');
-					console.log(err);
-				} else if(err.response.status === 400) {
-					alert(err.response.data);
-				}
-			} finally {
-				setIsLoading(false);
-			}
 		}
 
+		// Handle POST request
+		try {
+			const res = await axios.post('/upload', formData, {
+				headers: {
+					'Content-Type': 'multiparts/form-data'
+				}
+			});
+			postResult = res.data
+			isPostSuccessful = true;
+		} catch(err) {
+			if(err.response.status === 500) {
+				alert(err);
+				alert('There was a problem with the server');
+			} // Client side problems (e.g. wrong input format) 
+			else if(err.response.status === 400) {
+				alert(err.response.data);
+			}
+		} finally {
+			setIsLoading(false);
+		}
+
+		// If POST is successful, redirect to result page
 		if(isPostSuccessful) {
 			props.route.history.push({
-				pathname: '/result',
+				pathname: '/result?uid=' + randID,
 				state: {pred: postResult}
 			})
 		}

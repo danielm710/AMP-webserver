@@ -14,7 +14,6 @@ function TextArea(props) {
 					cols="120"
 					/>
 			</div>
-			<h1>{props.sequenceString}</h1>
 		</div>
 	)
 }

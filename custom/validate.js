@@ -40,7 +40,7 @@ var checkFasta = function (fasta) {
         }
 
         // Check for valid fasta
-        pattern = new RegExp('^[ACDEFGHIKLMNPQRSTVWXY\s]+$')
+        pattern = new RegExp('^[ACDEFGHIKLMNPQRSTVWXY]+$')
         if(!pattern.test(line)) {
             invalidLines.push(lineCounter);
         }

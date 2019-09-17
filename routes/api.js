@@ -24,18 +24,28 @@ var sendData = function(data) {
 
 
 router.post('/upload', fileUpload(), (req, res) => {
-	const uploadDir = path.join(__dirname, '/../luigi/data');
 	let file;
 	let isUpload;
-	let typedData = '';
 	let fileContent;
+	// Access UUID from client side
+	//const uid = req.body.uid;
+	const uid = "c3ed-acb1";
+
+	const AMPBaseDir = path.join(__dirname, '../AMP-Predictor-Test');
+	const uploadDir = path.join(AMPBaseDir, 'data');
+	const configPath = path.join(AMPBaseDir, 'template_config.cfg');
+	const luigiOutDir = path.join(AMPBaseDir, 'outputs', uid);
+	const donePath = path.join(luigiOutDir, 'done');
+	const predictionPath = path.join(luigiOutDir, 
+								'prediction', 
+								'unlabeled_pos_prediction.json');
 	
 	// Raw sequence is typed
-	if(req.body) {
-		console.log("raw")
+	if(req.body.seq) {
 		isUpload = false;
 		file = req.body.seq;
 		fileContent = req.body.seq;
+		console.log('raw')
 	}
 
 	// File is uploaded
@@ -43,7 +53,6 @@ router.post('/upload', fileUpload(), (req, res) => {
 		isUpload = true;
 		file = req.files.file;
 		fileContent = file.data.toString('utf8')
-		//console.log(file.data.toString('utf8'))
 	}
 
 	// Invoke all the async functions
@@ -71,10 +80,10 @@ router.post('/upload', fileUpload(), (req, res) => {
 
 		if(isValidFasta) {
 			helper.moveFile(file, uploadDir, isUpload)
-				.then(uploadPath => helper.getConfig(uploadPath))
-				.then(_ => helper.runLuigi())
-				.then(_ => helper.checkLuigiDone())
-				.then(_ => helper.fetchData())
+				.then(uploadPath => helper.getConfig(uploadPath, configPath, uid))
+				.then(_ => helper.runLuigi(AMPBaseDir))
+				.then(_ => helper.checkLuigiDone(donePath))
+				.then(_ => helper.fetchData(predictionPath))
 				.then(data => res.send(data))
 				.catch(err => res.status(500).send(err))
 		}	
