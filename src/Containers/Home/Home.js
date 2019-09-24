@@ -8,7 +8,6 @@ import InputHandle from '../../Components/InputHandle'
 import './Home.css'
 
 const Home = (props) => {
-	console.log(process.env.PORT)
 	return(
       <div className="container">
         <Header />

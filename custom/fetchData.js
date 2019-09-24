@@ -23,56 +23,113 @@ var moveFile = function(file, uploadDir, isUpload) {
 	if(!isUpload) {
 		return new Promise((resolve, reject) => {
 			const uploadPath = path.join(uploadDir, 'custom.fa');
-			fs.writeFile(uploadPath, file, err => {
+
+			// Make directory recursively
+			mkdirOptions = {
+				recursive: true
+			}
+			fs.mkdir(uploadDir, mkdirOptions, (err) => {
 				if(err) {
-					reject(err);
-				} else {
-					resolve(uploadPath);
+					reject(err)
 				}
-			})
+				fs.writeFile(uploadPath, file, err => {
+					if(err) {
+						reject(err);
+					} else {
+						resolve(uploadPath);
+					}
+				});
+			});	
 		});
 	} else {
 		return new Promise((resolve, reject) => {
 			const uploadPath = path.join(uploadDir, file.name);
-			file.mv(uploadPath, err => {
+
+			// Make directory recursively
+			mkdirOptions = {
+				recursive: true
+			}
+			fs.mkdir(uploadDir, mkdirOptions, (err) => {
 				if(err) {
-					reject(err);	
-				} else {
-					resolve(uploadPath);
+					reject(err)
 				}
-			})
-		})
-	}		
+				// Move file
+				file.mv(uploadPath, err => {
+					if(err) {
+						reject(err);	
+					} else {
+						resolve(uploadPath);
+					}
+				});
+			});
+		});
+	}	
 }
 
-var getConfig = function(uploadPath, configPath, uid) {
-	console.log("getConfig called!")
+var getLoggingConfig = function(loggingConfigPath, uploadedDataPath) {
+	console.log("getLoggingConfig called!")
+
+	return new Promise((resolve, reject) => {
+		fs.readFile(loggingConfigPath, 'utf8', (err, data) => {
+			if(err) {
+				reject(err)
+			}
+			const uploadDir = path.dirname(uploadedDataPath);
+			// luigi related logs will be written to this file
+			const logfilePath = path.join(uploadDir, 'logfile.log');
+			var newData = data.replace(/<LOGGING_PATH>/g, logfilePath)
+								.replace(/\\/g, "/");
+
+			// write a new logging.conf to this path
+			const newLoggingPath = path.join(uploadDir, 'logging.conf')
+			fs.writeFile(newLoggingPath, newData, err => {
+				if(err) {
+					reject(err)
+				} else {
+					resolve({
+						loggingConfPath: newLoggingPath,
+						uploadedDataPath: uploadedDataPath 
+					})
+				}
+			});
+		});
+	});
+}
+
+// Edit template_logging.conf and write a new logging conf file
+// Edit template.cfg and write a new config file
+var getLuigiConfig = function(uploadedDataPath, loggingConfPath, luigiConfigPath, uid) {
+	console.log("getLuigiConfig called!")
 	
 	return new Promise((resolve, reject) => {
-		fs.readFile(configPath, 'utf8', (err, data) => {
+		fs.readFile(luigiConfigPath, 'utf8', (err, data) => {
 			if(err) {
 				reject(err);
 			}	
-			var newData = data.replace(/<DATA_PATH>/g, uploadPath)
-								.replace(/<UID_PATH>/g, uid);
+			var newData = data.replace(/<LOGGING_CONF_PATH>/g, loggingConfPath)
+								.replace(/<DATA_PATH>/g, uploadedDataPath)
+								.replace(/<UID_PATH>/g, uid)
+								.replace(/\\/g, "/");
 	
-			uploadDir = path.dirname(uploadPath);
-			fs.writeFile(path.join(uploadDir, 'config.cfg'),
-				newData, 
-				err => {
-					if(err) {
-						reject(err);
-					} else {
-						resolve(true);
-					}
+			const uploadDir = path.dirname(uploadedDataPath);
+			const newConfigPath = path.join(uploadDir, 'config.cfg')
+			fs.writeFile(newConfigPath, newData, err => {
+				if(err) {
+					reject(err);
+				} else {
+					resolve(newConfigPath);
+				}
 			});
 		});
 	});
 		
 }
 
-var runLuigi = function(scriptPath) {
+var runLuigi = function(scriptPath, newConfigPath) {
 	console.log("runLuigi called!")
+	// Set environment variable for luigi to access configuration file
+	process.env['LUIGI_CONFIG_PATH'] = newConfigPath
+
 	return new Promise((resolve, reject) => {
 		var options = {
 			mode: 'text',
@@ -124,7 +181,8 @@ var fetchData = function(predictionPath) {
 module.exports = {
 	prepInput,
 	moveFile,
-	getConfig,
+	getLoggingConfig,
+	getLuigiConfig,
 	runLuigi,
 	checkLuigiDone,
 	fetchData

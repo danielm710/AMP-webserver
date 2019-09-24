@@ -11,8 +11,8 @@ function Result(props) {
         	<Header />
         	<NavbarComponent />
         	<AMPpredictor 
-                pred={props.location.state.pred}
-            />
+        		route={props}
+        	/>
         	<Footer />
      	</div>
 	)

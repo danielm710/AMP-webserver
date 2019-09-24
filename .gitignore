@@ -1,0 +1,5 @@
+AMP-Predictor-Test
+build
+node_modules
+output
+*.bak

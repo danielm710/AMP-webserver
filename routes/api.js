@@ -11,10 +11,10 @@ const validate = require('../custom/validate')
 
 router.use(cors());
 
-var sendData = function(data) {
+var sendData = function(data, uid) {
 	console.log("sendData called!")
 	return new Promise((resolve, reject) => {
-		router.get('/api/data', (req, res) => {
+		router.get('/api/prediction/' + uid, (req, res) => {
 			res.setHeader('Content-Type', 'application/json')
 			res.json(data);
 		});
@@ -28,12 +28,15 @@ router.post('/upload', fileUpload(), (req, res) => {
 	let isUpload;
 	let fileContent;
 	// Access UUID from client side
-	const uid = req.body.uid;
+	//const uid = req.body.uid;
+	const uid = 'c3ed-acb1';
 
 	const AMPBaseDir = path.join(__dirname, '../AMP-Predictor-Test');
-	const uploadDir = path.join(AMPBaseDir, 'data');
-	const configPath = path.join(AMPBaseDir, 'template_config.cfg');
+	const uploadDir = path.join(AMPBaseDir, 'data', uid);
+	const loggingConfigPath = path.join(AMPBaseDir, 'template_logging.conf');
+	const luigiConfigPath = path.join(AMPBaseDir, 'template_config.cfg');
 	const luigiOutDir = path.join(AMPBaseDir, 'outputs', uid);
+	//const uploadDir = path.join(luigiOutDir, 'data');
 	const donePath = path.join(luigiOutDir, 'done');
 	const predictionPath = path.join(luigiOutDir, 
 								'prediction', 
@@ -44,7 +47,6 @@ router.post('/upload', fileUpload(), (req, res) => {
 		isUpload = false;
 		file = req.body.seq;
 		fileContent = req.body.seq;
-		console.log('raw')
 	}
 
 	// File is uploaded
@@ -66,26 +68,27 @@ router.post('/upload', fileUpload(), (req, res) => {
 			res.status(400).send(err.message);
 		}
 		
-		//if(isValidFasta) {
-		//	helper.moveFile(file, uploadDir, isUpload)
-		//		.then(uploadPath => helper.getConfig(uploadPath))
-		//		.then(_ => helper.runLuigi())
-		//		.then(_ => helper.checkLuigiDone())
-		//		.then(_ => helper.fetchData())
-		//		.then(data => sendData(data))
-		//		.then(result => res.send(result))
-		//		.catch(err => res.status(500).send(err))
-		//}
-
 		if(isValidFasta) {
 			helper.moveFile(file, uploadDir, isUpload)
-				.then(uploadPath => helper.getConfig(uploadPath, configPath, uid))
-				.then(_ => helper.runLuigi(AMPBaseDir))
+				.then(uploadPath => helper.getLoggingConfig(loggingConfigPath,uploadPath))
+				.then(paths => helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, uid))
+				.then(newConfigPath => helper.runLuigi(AMPBaseDir, newConfigPath))
 				.then(_ => helper.checkLuigiDone(donePath))
 				.then(_ => helper.fetchData(predictionPath))
-				.then(data => res.send(data))
+				.then(data => sendData(data, uid))
+				.then(result => res.status(200).send(result))
 				.catch(err => res.status(500).send(err))
-		}	
+		}
+
+		//if(isValidFasta) {
+		//	helper.moveFile(file, uploadDir, isUpload)
+		//		.then(uploadPath => helper.getConfig(uploadPath, configPath, uid))
+		//		.then(_ => helper.runLuigi(AMPBaseDir))
+		//		.then(_ => helper.checkLuigiDone(donePath))
+		//		.then(_ => helper.fetchData(predictionPath))
+		//		.then(data => res.send(data))
+		//		.catch(err => res.status(500).send(err))
+		//}	
 	})();
 });
 

@@ -7,6 +7,9 @@ var app = express();
 // Specify global middlewares
 app.use(cors());
 
+// Routers (Needs this as the first route)
+app.use('/', apiRoute);
+
 // For production uses only
 if(process.env.NODE_ENV === 'production') {
 	console.log("------Production Mode------")
@@ -16,8 +19,6 @@ if(process.env.NODE_ENV === 'production') {
 		res.sendFile(path.join(__dirname, '/build/index.html'));
 	});
 };
-// Routers
-app.use('/', apiRoute);
 
 const PORT = process.env.PORT || 5000;
 
