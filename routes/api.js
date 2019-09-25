@@ -22,21 +22,31 @@ var sendData = function(data, uid) {
 	})		
 }
 
+// Additional server side file size check
+const fileUploadOption = {
+	limits: {
+		fileSize: 200 * 1024  * 1024 // 200 Mb
+	},
+	limitHandler: ((req, res, next) => {
+		const error = new Error("file too big")
+		error.httpStatusCode = 400
+		next(error)
+		return
+	})
+}
 
-router.post('/upload', fileUpload(), (req, res) => {
+router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 	let file;
 	let isUpload;
 	let fileContent;
-	// Access UUID from client side
-	//const uid = req.body.uid;
-	const uid = 'c3ed-acb1';
+	// Access UUID from the client side
+	const uid = req.body.uid;
 
 	const AMPBaseDir = path.join(__dirname, '../AMP-Predictor-Test');
 	const uploadDir = path.join(AMPBaseDir, 'data', uid);
 	const loggingConfigPath = path.join(AMPBaseDir, 'template_logging.conf');
 	const luigiConfigPath = path.join(AMPBaseDir, 'template_config.cfg');
 	const luigiOutDir = path.join(AMPBaseDir, 'outputs', uid);
-	//const uploadDir = path.join(luigiOutDir, 'data');
 	const donePath = path.join(luigiOutDir, 'done');
 	const predictionPath = path.join(luigiOutDir, 
 								'prediction', 

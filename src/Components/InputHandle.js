@@ -5,12 +5,19 @@ import { connect } from 'react-redux';
 import FileUpload from './FileUpload'
 import TextArea from './TextArea'
 import { makeRequest } from '../redux/actions/requestAction'
+import { isFileSizeGood } from '../helper/fileHelper'
 
 const InputHandle = (props) => {
 	const [file, setFile] = useState('');
 	const [fileName, setFileName] = useState('Choose File');
 	const [sequenceString, setSequenceString] = useState('');
 	const [value, setValue] = useState('');
+
+	const resetFileInput = () => {
+		setFile('');
+		setFileName('Choose File');
+		setValue('');
+	}
 
 	const handleSubmit = async e => {
 		e.preventDefault();
@@ -32,16 +39,18 @@ const InputHandle = (props) => {
 		if(name === 'sequenceString') {
 			setSequenceString(value)
 		} else if(name === 'fileupload') {
-			const tmpFile = files[0]
-			if(tmpFile) {
+			const megabytes = 200;
+			const sizeLimit = megabytes * 1024 * 1024;
+
+			if(isFileSizeGood(files, sizeLimit)) {
 				setFile(files[0]);
 				setFileName(files[0].name);
 				setValue(value);
+			} else { // Reset state
+				resetFileInput();
 			}
 		} else if(e.target.getAttribute('name') === 'reset') {
-			setFile('');
-			setFileName('Choose File');
-			setValue('');
+			resetFileInput();
 		}
 	}
 
