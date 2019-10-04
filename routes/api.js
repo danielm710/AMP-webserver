@@ -77,7 +77,6 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 			console.log(err.message)
 			res.status(400).send(err.message);
 		}
-		
 		if(isValidFasta) {
 			helper.moveFile(file, uploadDir, isUpload)
 				.then(uploadPath => helper.getLoggingConfig(loggingConfigPath,uploadPath))

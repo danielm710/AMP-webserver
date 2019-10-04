@@ -6,7 +6,7 @@ import { GET_UUID, REQUEST_LOAD, REQUEST_SUCCESS, REQUEST_FAIL } from './types';
 export const makeRequest = (fileName, file, sequenceString) => async dispatch => {
 	const formData = new FormData();
 	const randID = uuid.v4();
-	//const randID = 'c3ed-acb1'
+	//const randID = 'test'
 	let postResult;
 
 	// Set Loading to true
@@ -43,7 +43,6 @@ export const makeRequest = (fileName, file, sequenceString) => async dispatch =>
 				'Content-Type': 'multiparts/form-data'
 			}
 		});
-
 		dispatch({
 			type: REQUEST_SUCCESS,
 			payload: {
@@ -51,12 +50,20 @@ export const makeRequest = (fileName, file, sequenceString) => async dispatch =>
 			}
 		});
 	} catch(err) {
-		console.log(err)
-		if(err.response.status === 500) {
-			alert('There was a problem with the server');
-		} // Client side problems (e.g. wrong input format) 
-		else if(err.response.status === 400) {
-			alert(err.response.data);
+		// Request made, but the server responded with a status code
+		if(err.response) {
+			if(err.response.status === 500) {
+				alert('There was a problem with the server');
+			} // Client side problems (e.g. wrong input format) 
+			else if(err.response.status === 400) {
+				alert(err.response.data);
+			}
+		} else if (err.request) {
+			// The request was made but no response was received
+			console.log(err.request)
+		} else {
+			// Something else happened
+			console.log('Error', err.message);
 		}
 
 		dispatch({

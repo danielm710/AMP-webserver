@@ -29,7 +29,6 @@ class AMPpredictor extends React.Component {
 	}
 
 	render() {
-		console.log(this.props)
 		const headings = [
 			'ID',
 			'HMM',

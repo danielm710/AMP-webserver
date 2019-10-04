@@ -146,7 +146,6 @@ var runLuigi = function(scriptPath, newConfigPath) {
 			console.log(results)
 		});
 	});
-	console.log("runLuigi called!")
 };
 
 var checkLuigiDone = function(donePath) {
