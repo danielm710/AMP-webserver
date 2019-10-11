@@ -3,7 +3,7 @@ import queryString from 'query-string'
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import DataTable from './DataTable'
+import DataTable from './DataTable/DataTable'
 
 class AMPpredictor extends React.Component {
 	constructor(props) {
@@ -29,20 +29,10 @@ class AMPpredictor extends React.Component {
 	}
 
 	render() {
-		const headings = [
-			'ID',
-			'HMM',
-			'Length',
-			'Sequence'
-		]
-
 		return(
-			<div>
-				<DataTable
-					headings={headings}
-					predictionResult={this.state.predictionResult}
-				/>
-			</div>
+			<DataTable
+				predictionResult={this.state.predictionResult}
+			/>
 		)
 	}
 }

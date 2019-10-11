@@ -50,7 +50,7 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 	const donePath = path.join(luigiOutDir, 'done');
 	const predictionPath = path.join(luigiOutDir, 
 								'prediction', 
-								'unlabeled_pos_prediction.json');
+								'unlabeled_prediction.json');
 	
 	// Raw sequence is typed
 	if(req.body.seq) {

@@ -6,7 +6,7 @@ import { GET_UUID, REQUEST_LOAD, REQUEST_SUCCESS, REQUEST_FAIL } from './types';
 export const makeRequest = (fileName, file, sequenceString) => async dispatch => {
 	const formData = new FormData();
 	const randID = uuid.v4();
-	//const randID = 'test'
+	//const randID = 'trout'
 	let postResult;
 
 	// Set Loading to true
