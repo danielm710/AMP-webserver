@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
+const amqp = require('amqplib/callback_api');
 
 // Custom modules
 const helper = require('../custom/fetchData')
@@ -22,6 +23,30 @@ var sendData = function(data, uid) {
 	})		
 }
 
+function call_python(req, res) {
+  var input = [
+    req.body.uuid,
+    req.body.option
+  ]
+  amqp.connect('amqp://localhost', function (err, conn) {
+    conn.createChannel(function (err, ch) {
+      var luigi = 'luigi';
+      ch.assertQueue(luigi, { durable: false });
+      var results = 'results';
+      ch.assertQueue(results, { durable: false });
+      ch.sendToQueue(luigi, new Buffer(JSON.stringify(input)));
+      ch.consume(results, function (msg) {
+        //message = msg.content.toString()
+        ch.ack(msg)
+        console.log(msg)
+      }, {
+      	noAck: false
+      });
+    });
+    setTimeout(function () { conn.close(); }, 500); 
+    });
+}
+
 // Additional server side file size check
 const fileUploadOption = {
 	limits: {
@@ -33,6 +58,15 @@ const fileUploadOption = {
 		next(error)
 		return
 	})
+}
+
+function throwError(code, message, error) {
+	// Create custom error object if not passed
+	if(!error) {
+
+	} else {
+		
+	}
 }
 
 router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
@@ -68,36 +102,52 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 
 	// Invoke all the async functions
 	(async() => {
-		let isValidFasta
-
 		// Check whether submitted data conforms to valid fasta format
 		try {
-			isValidFasta = validate.checkFasta(fileContent);
+			// Check if the input is valid fasta
+			const isValidFasta = await validate.checkFasta(fileContent);
+
+			if(isValidFasta === true) {
+				const uploadPath = await helper.moveFile(file, uploadDir, isUpload);
+				const paths = await helper.getLoggingConfig(loggingConfigPath,uploadPath);
+				const newConfigPath = await helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, uid);
+
+				await helper.runLuigi(AMPBaseDir, newConfigPath)
+
+				await helper.checkLuigiDone(donePath)
+
+				const data = await helper.fetchData(predictionPath)
+
+				const result = await sendData(data, uid)
+
+				res.status(200).send(result)
+			}
 		} catch (err) {
-			console.log(err.message)
-			res.status(400).send(err.message);
-		}
-		if(isValidFasta) {
-			helper.moveFile(file, uploadDir, isUpload)
-				.then(uploadPath => helper.getLoggingConfig(loggingConfigPath,uploadPath))
-				.then(paths => helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, uid))
-				.then(newConfigPath => helper.runLuigi(AMPBaseDir, newConfigPath))
-				.then(_ => helper.checkLuigiDone(donePath))
-				.then(_ => helper.fetchData(predictionPath))
-				.then(data => sendData(data, uid))
-				.then(result => res.status(200).send(result))
-				.catch(err => res.status(500).send(err))
+			const message = err.message ? err.message : "Unknown error occured";
+			const code = err.code ? err.code : 500
+			res.status(code).send(message);
 		}
 
+		//let isValidFasta
+
+		//try {
+		//	isValidFasta = validate.checkFasta(fileContent);
+		//} catch (err) {
+		//	console.log(err.message)
+		//	res.status(400).send(err.message);
+		//}
 		//if(isValidFasta) {
 		//	helper.moveFile(file, uploadDir, isUpload)
-		//		.then(uploadPath => helper.getConfig(uploadPath, configPath, uid))
-		//		.then(_ => helper.runLuigi(AMPBaseDir))
+		//		.then(uploadPath => helper.getLoggingConfig(loggingConfigPath,uploadPath))
+		//		.then(paths => helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, uid))
+		//		.then(newConfigPath => helper.runLuigi(AMPBaseDir, newConfigPath))
 		//		.then(_ => helper.checkLuigiDone(donePath))
 		//		.then(_ => helper.fetchData(predictionPath))
-		//		.then(data => res.send(data))
+		//		.then(data => sendData(data, uid))
+		//		.then(result => res.status(200).send(result))
 		//		.catch(err => res.status(500).send(err))
-		//}	
+		//}
+
 	})();
 });
 

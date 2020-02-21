@@ -30,11 +30,19 @@ var moveFile = function(file, uploadDir, isUpload) {
 			}
 			fs.mkdir(uploadDir, mkdirOptions, (err) => {
 				if(err) {
-					reject(err)
+					reject({
+						error: err,
+						message: "Something went wrong while creating a directory",
+						code: 500
+					})
 				}
 				fs.writeFile(uploadPath, file, err => {
 					if(err) {
-						reject(err);
+						reject({
+							error: err,
+							message: "Something went wrong while writing a file",
+							code: 500
+						})
 					} else {
 						resolve(uploadPath);
 					}
@@ -51,12 +59,20 @@ var moveFile = function(file, uploadDir, isUpload) {
 			}
 			fs.mkdir(uploadDir, mkdirOptions, (err) => {
 				if(err) {
-					reject(err)
+					reject({
+						error: err,
+						message: "Something went wrong while creating a directory",
+						code: 500
+					})
 				}
 				// Move file
 				file.mv(uploadPath, err => {
 					if(err) {
-						reject(err);	
+						reject({
+							error: err,
+							message: "Something went wrong while moving a file",
+							code: 500
+						})	
 					} else {
 						resolve(uploadPath);
 					}
@@ -72,7 +88,11 @@ var getLoggingConfig = function(loggingConfigPath, uploadedDataPath) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(loggingConfigPath, 'utf8', (err, data) => {
 			if(err) {
-				reject(err)
+				reject({
+					error: err,
+					message: "Something went wrong while reading a file",
+					code: 500
+				})
 			}
 			const uploadDir = path.dirname(uploadedDataPath);
 			// luigi related logs will be written to this file
@@ -84,7 +104,11 @@ var getLoggingConfig = function(loggingConfigPath, uploadedDataPath) {
 			const newLoggingPath = path.join(uploadDir, 'logging.conf')
 			fs.writeFile(newLoggingPath, newData, err => {
 				if(err) {
-					reject(err)
+					reject({
+						error: err,
+						message: "Something went wrong while writing a file",
+						code: 500
+					})
 				} else {
 					resolve({
 						loggingConfPath: newLoggingPath,
@@ -104,7 +128,11 @@ var getLuigiConfig = function(uploadedDataPath, loggingConfPath, luigiConfigPath
 	return new Promise((resolve, reject) => {
 		fs.readFile(luigiConfigPath, 'utf8', (err, data) => {
 			if(err) {
-				reject(err);
+				reject({
+					error: err,
+					message: "Something went wrong while reading a file",
+					code: 500
+				});
 			}	
 			var newData = data.replace(/<LOGGING_CONF_PATH>/g, loggingConfPath)
 								.replace(/<DATA_PATH>/g, uploadedDataPath)
@@ -115,7 +143,11 @@ var getLuigiConfig = function(uploadedDataPath, loggingConfPath, luigiConfigPath
 			const newConfigPath = path.join(uploadDir, 'config.cfg')
 			fs.writeFile(newConfigPath, newData, err => {
 				if(err) {
-					reject(err);
+					reject({
+						error: err,
+						message: "Something went wrong while writing a file",
+						code: 500
+					})
 				} else {
 					resolve(newConfigPath);
 				}
