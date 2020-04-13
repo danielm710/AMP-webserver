@@ -1,0 +1,44 @@
+version: '3'
+services:
+  rabbit:
+    image: rabbitmq:management
+    ports:
+      - '15673:15672' # in case user has rabbitMQ installed on host
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=mypass
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./backend:/backend
+      - ./output:/output # Stores all the output to this directory
+      - ./log:/log # For logging
+      - ./input:/input # Named volume
+      - /backend/node_modules
+      - ./pipeline:/pipeline
+    ports:
+      - '5000:5000'
+    links:
+      - rabbit
+    tty: true
+    environment:
+      - LUIGI_CONFIG_PATH=/pipeline/AMP-Predictor-Test/luigi.cfg
+    command: npx nodemon -e js server.js
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - /frontend/node_modules
+      - ./frontend:/frontend
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+    tty: true
+    command: npm start
