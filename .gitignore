@@ -4,3 +4,6 @@ node_modules
 output
 *.bak
 deprecated
+input
+log
+pipeline
