@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
-const amqp = require('amqplib/callback_api');
 
 // Custom modules
 const helper = require('../custom/fetchData')
@@ -23,20 +22,13 @@ var sendData = function(data, uid) {
 	})		
 }
 
-function send_to_worker(AMPBaseDir, configPath) {
+function send_to_worker(publishMessage, scriptPath) {
 	var data = {
-		AMPBaseDir: AMPBaseDir,
-		configPath: configPath
+		scriptPath: scriptPath
 	}
-
-  amqp.connect('amqp://localhost', function (err, conn) {
-    conn.createChannel(function (err, ch) {
-      var luigi = 'luigi';
-      ch.assertQueue(luigi, { durable: false });
-      ch.sendToQueue(luigi, Buffer.from(JSON.stringify(data)));
-    });
-    setTimeout(function () { conn.close(); }, 500); 
-    });
+	
+	taskExchange = "task";
+	publishMessage(taskExchange, data)
 }
 
 // Additional server side file size check
@@ -93,7 +85,7 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 		fileContent = file.data.toString('utf8')
 	}
 
-	
+	//req.io.emit("test", {data: "From Node.js socket.io"})
 
 	// Invoke all the async functions
 	
@@ -108,12 +100,12 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 				const paths = await helper.getLoggingConfig(loggingConfigPath, uploadPath);
 				const newConfigPath = await helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, luigiOutDir);
 
-				//send_to_worker(AMPBaseDir, newConfigPath)
+				send_to_worker(req.publishMessage, AMPBaseDir)
 
-				await helper.runLuigi(AMPBaseDir, newConfigPath)
-				await helper.checkLuigiDone(donePath)
-				const data = await helper.fetchData(predictionPath)
-				const result = await sendData(data, uid)
+				//await helper.runLuigi(AMPBaseDir, newConfigPath)
+				//await helper.checkLuigiDone(donePath)
+				//const data = await helper.fetchData(predictionPath)
+				//const result = await sendData(data, uid)
 
 				//res.status(200).send(result)
 				res.status(200).send("Ok!");
