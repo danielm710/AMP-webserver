@@ -1,9 +1,9 @@
 const amqp = require('amqplib/callback_api');
 
 // Custom modules
-const helper = require('./custom/fetchData')
+const pipeline = require('./custom/runLuigi')
 
-amqp.connect('amqp://localhost', function(err, conn) {
+amqp.connect('amqp://admin:mypass@rabbit', function(err, conn) {
   if (err) {
     throw err;
   }
@@ -11,24 +11,52 @@ amqp.connect('amqp://localhost', function(err, conn) {
     if (err) {
       throw err;
     }
-    var queue = 'luigi';
+    var taskExchange = 'task';
+    var progressExchange = 'progress';
 
-    ch.assertQueue(queue, {
+    ch.assertExchange(taskExchange, 'fanout', {
       durable: false
     });
 
-    console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", queue);
+    ch.assertExchange(progressExchange, 'fanout', {
+      durable: false
+    });
 
-		ch.consume(queue, function(msg) {
-			var data = JSON.parse(msg.content)
-			var AMPBaseDir = data.AMPBaseDir
-			var configPath = data.configPath
+    ch.assertQueue('', {
+      exclusive: true
+    }, function(err, q) {
+      if(err) {
+        throw err;
+      }
 
-		  console.log(" [x] Received %s", data);
-		  helper.runLuigi(AMPBaseDir, configPath)
-		}, {
-		    noAck: true
-		});
+      console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q.queue);
+      ch.bindQueue(q.queue, taskExchange, '');
+
+      ch.consume(q.queue, function(msg) {
+        if(msg.content) {
+          var data = JSON.parse(msg.content)
+          var scriptPath = data.scriptPath
+
+          console.log(" [x] Received %s", data);
+
+          // Run AMPspredictor pipeline
+          (async() => {
+            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Reading input fasta file...'})));
+            await pipeline.readFasta(scriptPath)
+
+            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Running HMMscan...'})));
+            await pipeline.hmmscan(scriptPath)
+
+            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Making prediction...'})));
+            await pipeline.makePrediction(scriptPath)
+
+            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Done!'})));
+          })();
+        }
+      }, {
+        noAck: true
+      })
+    });
 
   });
 });
