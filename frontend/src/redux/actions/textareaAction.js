@@ -1,4 +1,4 @@
-import { TEXTAREA_HANDLE_CHANGE } from './types';
+import { TEXTAREA_HANDLE_CHANGE, RESET_TEXTAREA } from './types';
 
 export const textareaHandleChange = (e) => dispatch => {
 	const { value } = e.target
@@ -8,5 +8,11 @@ export const textareaHandleChange = (e) => dispatch => {
 		payload: {
 			textareaInput: value
 		}
+	})
+}
+
+export const resetTextarea = () => dispatch => {
+	dispatch({
+		type: RESET_TEXTAREA
 	})
 }
