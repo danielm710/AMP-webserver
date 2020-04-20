@@ -1,27 +1,22 @@
-import { GET_UUID, REQUEST_LOAD, REQUEST_SUCCESS, REQUEST_FAIL } from '../actions/types';
+import { LOADING_STATUS, SHOULD_REDIRECT } from '../actions/types';
 
 const initialState = {
 	isLoading: false,
+	shouldRedirect: false
 }
 
 export default function(state = initialState, action) {
 	switch(action.type) {
-		case REQUEST_LOAD:
+		case LOADING_STATUS:
 			return {
 				...state,
-				isLoading: action.payload
+				isLoading: action.payload.isLoading
 			}
 
-		case REQUEST_FAIL:
+		case SHOULD_REDIRECT:
 			return {
 				...state,
-				isLoading: action.payload.isLoading,
-			}
-
-		case REQUEST_SUCCESS:
-			return {
-				...state,
-				isLoading: action.payload.isLoading,
+				shouldRedirect: action.payload.shouldRedirect
 			}
 
 		default:

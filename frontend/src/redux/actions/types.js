@@ -1,4 +1,8 @@
-export const GET_UUID = 'GET_UUID';
-export const REQUEST_LOAD = 'REQUEST_LOAD'
-export const REQUEST_SUCCESS = 'REQUEST_SUCCESS'
-export const REQUEST_FAIL = 'REQUEST_FAIL'
+export const LOADING_STATUS = 'LOADING_STATUS'
+export const SHOULD_REDIRECT = 'SHOULD_REDIRECT'
+// FileUploadAction related
+export const RESET_FILE_INPUT = 'RESET_FILE_INPUT'
+export const FILEUPLOAD_HANDLE_CHANGE = 'FILEUPLOAD_HANDLE_CHANGE'
+
+// TextareaAction related
+export const TEXTAREA_HANDLE_CHANGE = 'TEXTAREA_HANDLE_CHANGE'
