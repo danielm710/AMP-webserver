@@ -3,7 +3,7 @@ import React from 'react';
 import NavbarComponent from '../../Components/NavbarComponent'
 import Header from '../../Components/Header'
 import Footer from '../../Components/Footer'
-import InputHandle from '../../Components/InputHandle'
+import InputUploadMain from '../../Components/InputUpload/InputUploadMain'
 
 import './Home.css'
 
@@ -12,7 +12,7 @@ const Home = (props) => {
       <div className="container">
         <Header />
         <NavbarComponent />
-        <InputHandle route={props}/>
+        <InputUploadMain route={props}/>
         <Footer />
       </div>
     )

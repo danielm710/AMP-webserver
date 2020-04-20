@@ -2,7 +2,7 @@ import React from 'react'
 
 import Header from '../../Components/Header'
 import NavbarComponent from '../../Components/NavbarComponent'
-import AMPpredictor from '../../Components/AMPpredictor'
+import ResultMain from '../../Components/Result/ResultMain'
 import Footer from '../../Components/Footer'
 
 function Result(props) {
@@ -10,7 +10,7 @@ function Result(props) {
 		<div className="container">
         	<Header />
         	<NavbarComponent />
-        	<AMPpredictor 
+        	<ResultMain 
         		route={props}
         	/>
         	<Footer />
