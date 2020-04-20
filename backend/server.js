@@ -11,51 +11,6 @@ var server = app.listen(PORT, () => {console.log(`server running on PORT ${PORT}
 const io = require('socket.io').listen(server);
 exports.io = io;
 
-// RabbitMQ server
-const URL = 'amqp://admin:mypass@rabbit'
-let channel;
-/*
-const amqp = require('amqplib/callback_api');
-amqp.connect(URL, function (err, conn) {
-	conn.createChannel(function (err, ch) {
-		channel = ch;
-
-		const progressExchange = 'progress';
-		ch.assertExchange(progressExchange, 'fanout', {
-			durable: false
-		});
-
-		ch.assertQueue('', {
-			exclusive: true
-		}, function(err, q) {
-			if(err) {
-				throw err;
-			}
-
-			console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q.queue);
-			ch.bindQueue(q.queue, progressExchange, '');
-
-			ch.consume(q.queue, function(msg) {
-				if(msg.content) {
-					var data = JSON.parse(msg.content)
-					console.log(" [x] Received %s", data);
-					io.emit('test', {data: data.message})
-				}
-			}, {
-				noAck: true
-			})
-		});
-	}); 
-});
-*/
-const publishMessage = (exchange, data) => {
-  channel.assertExchange(exchange, 'fanout', {
-  	durable: false
-  });
-
-  channel.publish(exchange, '', Buffer.from(JSON.stringify(data)));
-};
-
 // Routes
 const apiRoute = require('./routes/api');
 

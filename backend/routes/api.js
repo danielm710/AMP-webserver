@@ -15,10 +15,10 @@ var io = server.io;
 
 router.use(cors());
 
+// Establish RabbitMQ connection
+const amqp = require('amqplib/callback_api');
 const URL = 'amqp://admin:mypass@rabbit'
 let channel;
-
-const amqp = require('amqplib/callback_api');
 amqp.connect(URL, function (err, conn) {
 	conn.createChannel(function (err, ch) {
 		channel = ch;
