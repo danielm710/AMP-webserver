@@ -45,13 +45,31 @@ amqp.connect('amqp://admin:mypass@rabbit', function(err, conn) {
 
           // Run AMPspredictor pipeline
           (async() => {
-            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Reading input fasta file...'})));
+            ch.publish(progressExchange, '', Buffer.from(
+              JSON.stringify(
+                {result: 
+                  {message: 'Reading input fasta file...'}
+                }
+              )
+            ));
             await pipeline.readFasta(scriptPath)
 
-            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Running HMMscan...'})));
+            ch.publish(progressExchange, '', Buffer.from(
+              JSON.stringify(
+                {result: 
+                  {message: 'Running HMMscan...'}
+                }
+              )
+            ));
             await pipeline.hmmscan(scriptPath)
 
-            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Making prediction...'})));
+            ch.publish(progressExchange, '', Buffer.from(
+              JSON.stringify(
+                {result: 
+                  {message: 'Making prediction...'}
+                }
+              )
+            ));
             await pipeline.makePrediction(scriptPath)
 
             const isPipelineDone = await helper.checkLuigiDone(donePath)
@@ -63,9 +81,15 @@ amqp.connect('amqp://admin:mypass@rabbit', function(err, conn) {
                 predictionData: predictionData,
                 uid: uid
               }
-              ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: doneData})));
+              ch.publish(progressExchange, '', Buffer.from(JSON.stringify({result: doneData})));
             } else {
-              ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Job failed!'})));
+              ch.publish(progressExchange, '', Buffer.from(
+              JSON.stringify(
+                {result: 
+                  {message: 'Job failed...'}
+                }
+              )
+            ));
             }
           })();
         }

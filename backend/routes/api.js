@@ -43,13 +43,13 @@ amqp.connect(URL, function (err, conn) {
 					var data = JSON.parse(msg.content)
 					console.log(" [x] Received %s", data);
 
-					if(data.message.message === "Done!") {
-						var predictionData = data.message.predictionData;
-						var uid = data.message.uid;
+					if(data.result.message === "Done!") {
+						var predictionData = data.result.predictionData;
+						var uid = data.result.uid;
 						sendData(predictionData, uid);
-						io.emit('test', {data: data.message.message})
+						io.emit('test', {data: data.result.message})
 					} else {
-						io.emit('test', {data: data.message})
+						io.emit('test', {data: data.result.message})
 					}
 				}
 			}, {
