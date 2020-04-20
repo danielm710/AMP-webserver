@@ -4,14 +4,21 @@ import { connect } from 'react-redux';
 import axios from 'axios';
 import uuid from 'uuid'
 
+import { resetFileInput } from '../../redux/actions/fileUploadAction';
+import { resetTextarea } from '../../redux/actions/textareaAction';
+
 import FileUpload from './FileUpload'
-import FileUploadReset from './FileUploadReset'
 import TextArea from './TextArea'
 import TaskProgress from '../Progress/TaskProgress'
+
+import './InputUploadStyle.css'
 
 const InputHandle = (props) => {
 	// Redux states
 	const { file, fileName, textareaInput, shouldRedirect } = props;
+
+	// Redux actions
+	const { resetFileInput } = props;
 
 	const [uid, setUid] = useState('')
 
@@ -23,7 +30,13 @@ const InputHandle = (props) => {
 		if(shouldRedirect === true) {
 			props.route.history.push('/result?uid=' + uid)
 		}
-	}, [shouldRedirect, uid])
+
+		// Clear input field as a clean up
+		return(() => {
+			resetFileInput();
+			resetTextarea();
+		});
+	}, [shouldRedirect, uid, props.route.history])
 
 	const handleSubmit = async e => {
 		e.preventDefault();
@@ -80,7 +93,6 @@ const InputHandle = (props) => {
 			<form onSubmit={handleSubmit}>
 				<TextArea />
 				<FileUpload />
-				<FileUploadReset />
 				<input 
 					type='submit'
 					value='Predict!'
@@ -102,4 +114,9 @@ const mapStateToProps = state => ({
 	shouldRedirect: state.request.shouldRedirect
 });
 
-export default connect(mapStateToProps, { })(InputHandle);
+const mapDispatchToProps = {
+	resetFileInput,
+	resetTextarea
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(InputHandle);
