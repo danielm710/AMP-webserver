@@ -9,11 +9,12 @@ const PORT = process.env.PORT || 5000;
 // Socket.IO server
 var server = app.listen(PORT, () => {console.log(`server running on PORT ${PORT}!`)});
 const io = require('socket.io').listen(server);
+exports.io = io;
 
 // RabbitMQ server
 const URL = 'amqp://admin:mypass@rabbit'
 let channel;
-
+/*
 const amqp = require('amqplib/callback_api');
 amqp.connect(URL, function (err, conn) {
 	conn.createChannel(function (err, ch) {
@@ -46,7 +47,7 @@ amqp.connect(URL, function (err, conn) {
 		});
 	}); 
 });
-
+*/
 const publishMessage = (exchange, data) => {
   channel.assertExchange(exchange, 'fanout', {
   	durable: false
@@ -61,8 +62,7 @@ const apiRoute = require('./routes/api');
 // Specify middleware before specifying routes
 // to access server scoped modules and functions
 app.use((req, res, next) => {
-	req.io = io;
-	req.publishMessage = publishMessage;
+	//req.publishMessage = publishMessage;
 	next();
 })
 

@@ -9,22 +9,88 @@ const fileUpload = require('express-fileupload');
 const helper = require('../custom/fetchData')
 const validate = require('../custom/validate')
 
+// get socket.io instance from the server
+var server = require('../server');
+var io = server.io;
+
 router.use(cors());
+
+const URL = 'amqp://admin:mypass@rabbit'
+let channel;
+
+const amqp = require('amqplib/callback_api');
+amqp.connect(URL, function (err, conn) {
+	conn.createChannel(function (err, ch) {
+		channel = ch;
+
+		const progressExchange = 'progress';
+		ch.assertExchange(progressExchange, 'fanout', {
+			durable: false
+		});
+
+		ch.assertQueue('', {
+			exclusive: true
+		}, function(err, q) {
+			if(err) {
+				throw err;
+			}
+
+			console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q.queue);
+			ch.bindQueue(q.queue, progressExchange, '');
+
+			ch.consume(q.queue, function(msg) {
+				if(msg.content) {
+					var data = JSON.parse(msg.content)
+					console.log(" [x] Received %s", data);
+
+					if(data.message.message === "Done!") {
+						var predictionData = data.message.predictionData;
+						var uid = data.message.uid;
+						sendData(predictionData, uid);
+						io.emit('test', {data: data.message.message})
+					} else {
+						io.emit('test', {data: data.message})
+					}
+				}
+			}, {
+				noAck: true
+			})
+		});
+	}); 
+});
+
+const publishMessage = (exchange, data) => {
+  channel.assertExchange(exchange, 'fanout', {
+  	durable: false
+  });
+
+  channel.publish(exchange, '', Buffer.from(JSON.stringify(data)));
+};
 
 var sendData = function(data, uid) {
 	console.log("sendData called!")
+	console.log(uid)
+	router.get('/api/prediction/' + uid, (req, res) => {
+		res.setHeader('Content-Type', 'application/json')
+		res.json(data);
+	});
+	/*
 	return new Promise((resolve, reject) => {
 		router.get('/api/prediction/' + uid, (req, res) => {
 			res.setHeader('Content-Type', 'application/json')
 			res.json(data);
 		});
 		resolve("done!");
-	})		
+	})
+	*/
 }
 
-function send_to_worker(publishMessage, scriptPath) {
+function send_to_worker(uid, scriptPath, donePath, predictionPath) {
 	var data = {
-		scriptPath: scriptPath
+		uid: uid,
+		scriptPath: scriptPath,
+		donePath: donePath,
+		predictionPath: predictionPath
 	}
 	
 	taskExchange = "task";
@@ -84,11 +150,7 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 		file = req.files.file;
 		fileContent = file.data.toString('utf8')
 	}
-
-	//req.io.emit("test", {data: "From Node.js socket.io"})
-
-	// Invoke all the async functions
-	
+	// Invoke all the async functions	
 	(async() => {
 		// Check whether submitted data conforms to valid fasta format
 		try {
@@ -100,12 +162,7 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 				const paths = await helper.getLoggingConfig(loggingConfigPath, uploadPath);
 				const newConfigPath = await helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, luigiOutDir);
 
-				send_to_worker(req.publishMessage, AMPBaseDir)
-
-				//await helper.runLuigi(AMPBaseDir, newConfigPath)
-				//await helper.checkLuigiDone(donePath)
-				//const data = await helper.fetchData(predictionPath)
-				//const result = await sendData(data, uid)
+				send_to_worker(uid, AMPBaseDir, donePath, predictionPath)
 
 				//res.status(200).send(result)
 				res.status(200).send("Ok!");
@@ -115,9 +172,7 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 			const code = err.code ? err.code : 500
 			res.status(code).send(message);
 		}
-	})();
-
-	
+	})();	
 });
 
 module.exports = router;
