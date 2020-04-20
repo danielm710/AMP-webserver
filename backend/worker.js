@@ -2,6 +2,7 @@ const amqp = require('amqplib/callback_api');
 
 // Custom modules
 const pipeline = require('./custom/runLuigi')
+const helper = require('./custom/fetchData')
 
 amqp.connect('amqp://admin:mypass@rabbit', function(err, conn) {
   if (err) {
@@ -34,8 +35,11 @@ amqp.connect('amqp://admin:mypass@rabbit', function(err, conn) {
 
       ch.consume(q.queue, function(msg) {
         if(msg.content) {
-          var data = JSON.parse(msg.content)
-          var scriptPath = data.scriptPath
+          var data = JSON.parse(msg.content);
+          var uid = data.uid;
+          var scriptPath = data.scriptPath;
+          var donePath = data.donePath;
+          var predictionPath = data.predictionPath;
 
           console.log(" [x] Received %s", data);
 
@@ -50,7 +54,19 @@ amqp.connect('amqp://admin:mypass@rabbit', function(err, conn) {
             ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Making prediction...'})));
             await pipeline.makePrediction(scriptPath)
 
-            ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Done!'})));
+            const isPipelineDone = await helper.checkLuigiDone(donePath)
+
+            if(isPipelineDone === true) {
+              const predictionData = await helper.fetchData(predictionPath)
+              const doneData = {
+                message: 'Done!',
+                predictionData: predictionData,
+                uid: uid
+              }
+              ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: doneData})));
+            } else {
+              ch.publish(progressExchange, '', Buffer.from(JSON.stringify({message: 'Job failed!'})));
+            }
           })();
         }
       }, {
