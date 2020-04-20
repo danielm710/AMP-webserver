@@ -8,7 +8,7 @@ function FileUploadRemove(props) {
 
 	return (
 		<span
-			className="reset-upload"
+			className="reset-upload-button"
 			name="reset"
 			onClick={(e) => {fileUploadHandleChange(e)}}
 		> 

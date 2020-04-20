@@ -1,5 +1,7 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
+
+import FileUploadReset from './FileUploadReset'
 import { fileUploadHandleChange } from '../../redux/actions/fileUploadAction';
 
 function FileUpload(props) {
@@ -10,11 +12,11 @@ function FileUpload(props) {
 
 	// File upload input size limit
 	// 200 MB
-	const SIZE_LIMIT = 20 * 1024 * 1024;
+	const SIZE_LIMIT = 200 * 1024 * 1024;
 
 	return(
-		<Fragment>
-			<div className="custome-file">
+		<div className="file-upload-outer-container">
+			<div className="file-upload-inner-container file-upload">
 				<input
 					type="file"
 					className="input"
@@ -24,7 +26,10 @@ function FileUpload(props) {
 					value={value}
 				/>
 			</div>
-		</Fragment>
+			<div className="file-upload-inner-container reset-upload">
+				<FileUploadReset />
+			</div>
+		</div>
 	)
 	
 }

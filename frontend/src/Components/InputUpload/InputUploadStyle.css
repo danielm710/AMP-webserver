@@ -1,10 +1,26 @@
+.file-upload-outer-container {
+	width: 500px;
+}
+
+.file-upload-inner-container {
+	display: inline-block;
+}
+
+.file-upload {
+	width: 60%;
+}
+
 .reset-upload {
+	width: 40%;
+}
+
+.reset-upload-button {
 	margin-left: 20px;
 	font-size: 20px;
 	font-weight: bold;
 	border-radius: 5px;
 }
 
-.reset-upload:hover {
+.reset-upload-button:hover {
 	cursor: pointer;
 }
