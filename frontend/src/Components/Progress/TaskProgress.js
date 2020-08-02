@@ -13,7 +13,7 @@ function TaskProgress(props) {
 	// Redux action
 	const { getLoadingStatus, getRedirectStatus } = props;
 
-	const endpoint = "http://localhost:5000"
+	const endpoint = "http://localhost:8080"
 	
 	useEffect(() => {
 		const socket = io.connect(endpoint);
@@ -41,7 +41,7 @@ function TaskProgress(props) {
 		getRedirectStatus(isDataDone)
 
 		return () => {
-			console.log("data useEffect unmounting...")
+			
 		}
 	}, [data])
 	

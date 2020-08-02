@@ -27,9 +27,11 @@ app.use('/', apiRoute);
 // For production uses only
 if(process.env.NODE_ENV === 'production') {
 	console.log("------Production Mode------")
+	//app.use('/static', express.static('/frontend/build/static'));
 	app.use('/static', express.static('build/static'));
 
 	app.get('/*', (req, res)=> {  
 		res.sendFile(path.join(__dirname, '/build/index.html'));
+		//res.sendFile('./build/index.html');
 	});
 };
