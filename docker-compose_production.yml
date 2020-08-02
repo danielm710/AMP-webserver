@@ -1,0 +1,51 @@
+version: '3.6'
+services:
+  rabbit:
+    image: rabbitmq:3.8.5-management
+    ports:
+      - '15673:15672' # in case user has rabbitMQ installed on host
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=mypass
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+
+  prod_app:
+    build:
+      context: .
+      dockerfile: production.Dockerfile
+    volumes:
+      - ./output:/output # Stores all the output to this directory
+      - ./log:/log # For logging
+      - ./input:/input # Named volume
+      - ./pipeline:/pipeline
+    ports:
+      - '8080:8080'
+    depends_on:
+      - rabbit
+    restart: on-failure
+    tty: true
+    environment:
+      - LUIGI_CONFIG_PATH=/pipeline/AMP-Predictor-Test/luigi.cfg
+      - NODE_ENV=production
+      - PORT=8080
+    command: node server.js
+
+  prod_worker:
+    build:
+      context: .
+      dockerfile: production.Dockerfile
+    volumes:
+      - ./output:/output # Stores all the output to this directory
+      - ./log:/log # For logging
+      - ./input:/input # Named volume
+      - ./pipeline:/pipeline
+    depends_on:
+      - rabbit
+    restart: on-failure
+    environment:
+      - LUIGI_CONFIG_PATH=/pipeline/AMP-Predictor-Test/luigi.cfg
+    command: node worker.js
