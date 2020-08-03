@@ -21,7 +21,7 @@ services:
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      - ./pipeline:/pipeline
+      #- ./pipeline:/pipeline
     ports:
       - '8080:8080'
     depends_on:
@@ -42,7 +42,7 @@ services:
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      - ./pipeline:/pipeline
+      #- ./pipeline:/pipeline
     depends_on:
       - rabbit
     restart: on-failure
