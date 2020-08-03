@@ -1,5 +1,13 @@
 version: '3.6'
 services:
+  nginx:
+    image: nginx:stable
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites-available:/etc/nginx/sites-available
+
   rabbit:
     image: rabbitmq:3.8.5-management
     ports:
@@ -21,7 +29,7 @@ services:
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      #- ./pipeline:/pipeline
+      - pipeline:/pipeline/AMP-Predictor-Test
     ports:
       - '8080:8080'
     depends_on:
@@ -42,10 +50,13 @@ services:
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      #- ./pipeline:/pipeline
+      - pipeline:/pipeline/AMP-Predictor-Test
     depends_on:
       - rabbit
     restart: on-failure
     environment:
       - LUIGI_CONFIG_PATH=/pipeline/AMP-Predictor-Test/luigi.cfg
     command: node worker.js
+
+volumes:
+  pipeline:
