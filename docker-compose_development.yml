@@ -1,9 +1,21 @@
-version: '3.6'
+version: '3'
 services:
+  nginx:
+    image: nginx:stable
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/dev/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - backend
+    restart: on-failure
+
   rabbit:
-    image: rabbitmq:3.8.5-management
+    image: rabbitmq:management
     ports:
       - '15673:15672' # in case user has rabbitMQ installed on host
+      - 5672:5672
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=mypass
@@ -13,55 +25,58 @@ services:
       timeout: 15s
       retries: 1
 
-  prod_app:
-    build:
-      context: .
-      dockerfile: production.Dockerfile
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/sites-available:/etc/nginx/sites-available
-    ports:
-      - '80:80'
-    depends_on:
-      - rabbit
-    environment:
-      - PORT=8080
-    command: nginx -g "daemon off";
-
-  prod_backend:
+  worker:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: dev.Dockerfile
     volumes:
+      - ./backend:/backend
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      - pipeline:/pipeline/AMP-Predictor-Test
-    ports:
-      - '5000'
+      - /backend/node_modules
+      - ./pipeline:/pipeline
     depends_on:
       - rabbit
     restart: on-failure
     environment:
       - LUIGI_CONFIG_PATH=/pipeline/AMP-Predictor-Test/luigi.cfg
-      - NODE_ENV=production
-    command: node server.js
+    command: npx nodemon worker.js
 
-  prod_worker:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     volumes:
+      - ./backend:/backend
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      - pipeline:/pipeline/AMP-Predictor-Test
+      - /backend/node_modules
+      - ./pipeline:/pipeline
+    ports:
+      - '5000:5000'
     depends_on:
       - rabbit
     restart: on-failure
+    tty: true
     environment:
       - LUIGI_CONFIG_PATH=/pipeline/AMP-Predictor-Test/luigi.cfg
-    command: node worker.js
+      - NODE_ENV=development
+      - HOST=127.0.0.1
+    command: npx nodemon -e js server.js
 
-volumes:
-  pipeline:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - /frontend/node_modules
+      - ./frontend:/frontend
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+    tty: true
+    command: npm start

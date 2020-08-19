@@ -28,7 +28,7 @@ RUN git clone --single-branch --branch dev https://github.com/danielm710/AMP-Pre
 WORKDIR /backend
 
 # add `/app/node_modules/.bin` to $PATH
-ENV PATH /frontend/node_modules/.bin:$PATH
+ENV PATH /backend/node_modules/.bin:$PATH
 
 # Install node modules
 COPY package.json /backend/package.json
@@ -36,5 +36,3 @@ RUN npm install --silent
 
 COPY . ./
 RUN pip3 install -r requirements.txt
-
-#CMD ["flask", "run", "--host", "0.0.0.0"]
