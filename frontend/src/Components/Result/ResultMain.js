@@ -16,7 +16,7 @@ class ResultMain extends React.Component {
 	componentDidMount() {
 		const parsed = queryString.parse(this.props.route.location.search)
 		const uid = parsed.uid
-		const endPoint = '/api/prediction/' + uid
+		const endPoint = 'http://localhost/api/api/prediction/' + uid
 
 		fetch(endPoint)
 		.then(response => response.json())

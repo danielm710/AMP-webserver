@@ -61,8 +61,9 @@ const InputHandle = (props) => {
 			}
 
 			// Handle POST request
+			const endpoint = 'http://localhost/api/upload'
 			try {
-				const res = await axios.post('/upload', formData, {
+				const res = await axios.post(endpoint, formData, {
 					headers: {
 						'Content-Type': 'multiparts/form-data'
 					}
