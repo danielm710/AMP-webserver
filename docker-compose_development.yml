@@ -28,14 +28,15 @@ services:
   worker:
     build:
       context: ./backend
-      dockerfile: dev.Dockerfile
+      dockerfile: Dockerfile
     volumes:
       - ./backend:/backend
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
       - /backend/node_modules
-      - ./pipeline:/pipeline
+      #- ./pipeline:/pipeline
+      - pipeline:/pipeline/AMP-Predictor-Test
     depends_on:
       - rabbit
     restart: on-failure
@@ -53,7 +54,8 @@ services:
       - ./log:/log # For logging
       - ./input:/input # Named volume
       - /backend/node_modules
-      - ./pipeline:/pipeline
+      #- ./pipeline:/pipeline
+      - pipeline:/pipeline/AMP-Predictor-Test
     ports:
       - '5000:5000'
     depends_on:
@@ -80,3 +82,6 @@ services:
       - HOST=0.0.0.0
     tty: true
     command: npm start
+
+volumes:
+  pipeline:

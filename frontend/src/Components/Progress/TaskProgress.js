@@ -13,10 +13,10 @@ function TaskProgress(props) {
 	// Redux action
 	const { getLoadingStatus, getRedirectStatus } = props;
 
-	const endpoint = "http://localhost"
+	//const endpoint = "http://localhost"
 	
 	useEffect(() => {
-		const socket = io.connect(endpoint);
+		const socket = io.connect();
 
 		socket.on("error", err => {
 			console.log("SocketIO error")

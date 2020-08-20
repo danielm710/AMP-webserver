@@ -36,7 +36,7 @@ services:
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      - pipeline:/pipeline/AMP-Predictor-Test
+      - pipeline_volume:/pipeline/AMP-Predictor-Test
     ports:
       - '5000'
     depends_on:
@@ -55,7 +55,7 @@ services:
       - ./output:/output # Stores all the output to this directory
       - ./log:/log # For logging
       - ./input:/input # Named volume
-      - pipeline:/pipeline/AMP-Predictor-Test
+      - pipeline_volume:/pipeline/AMP-Predictor-Test
     depends_on:
       - rabbit
     restart: on-failure
@@ -64,4 +64,4 @@ services:
     command: node worker.js
 
 volumes:
-  pipeline:
+  pipeline_volume:
