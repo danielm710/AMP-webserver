@@ -35,8 +35,7 @@ services:
       - ./log:/log # For logging
       - ./input:/input # Named volume
       - /backend/node_modules
-      #- ./pipeline:/pipeline
-      - pipeline:/pipeline/AMP-Predictor-Test
+      - ./pipeline:/pipeline
     depends_on:
       - rabbit
     restart: on-failure
@@ -54,8 +53,7 @@ services:
       - ./log:/log # For logging
       - ./input:/input # Named volume
       - /backend/node_modules
-      #- ./pipeline:/pipeline
-      - pipeline:/pipeline/AMP-Predictor-Test
+      - ./pipeline:/pipeline
     ports:
       - '5000:5000'
     depends_on:

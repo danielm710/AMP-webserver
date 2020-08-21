@@ -10,15 +10,15 @@
 #}
 
 server {
-		listen 80;
+	listen 80;
   	listen [::]:80;
 
-    server_name minswebsite.com www.minswebsite.com;
+    #server_name minswebsite.com www.minswebsite.com;
 
     location / {
-    		root /usr/share/nginx/html;
-    		index index.html;
-    		try_files $uri $uri/ /index.html;
+    	root /usr/share/nginx/html;
+    	index index.html;
+    	try_files $uri $uri/ /index.html;
 
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;

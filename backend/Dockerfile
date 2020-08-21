@@ -22,7 +22,7 @@ RUN apt-get install -y git
 # Make directory to store pipeline
 WORKDIR /pipeline
 # clone AXIOME3 Pipeline repository
-RUN git clone --single-branch --branch dev https://github.com/danielm710/AMP-Predictor-Test.git
+RUN git clone https://github.com/danielm710/AMP-Predictor-Test.git
 
 # Make /backend working directory; backend code lives here
 WORKDIR /backend
