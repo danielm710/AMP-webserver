@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 
 import DataTable from './DataTable/DataTable'
 
+import { ENDPOINT_ROOT } from '../../Configs/api_config'
+
 class ResultMain extends React.Component {
 	constructor(props) {
 		super()
@@ -16,7 +18,7 @@ class ResultMain extends React.Component {
 	componentDidMount() {
 		const parsed = queryString.parse(this.props.route.location.search)
 		const uid = parsed.uid
-		const endPoint = 'http://localhost/api/api/prediction/' + uid
+		const endPoint = ENDPOINT_ROOT + '/api/prediction/' + uid
 
 		fetch(endPoint)
 		.then(response => response.json())

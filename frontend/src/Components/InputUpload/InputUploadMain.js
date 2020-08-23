@@ -13,6 +13,8 @@ import TaskProgress from '../Progress/TaskProgress'
 
 import './InputUploadStyle.css'
 
+import { ENDPOINT_ROOT } from '../../Configs/api_config'
+
 const InputHandle = (props) => {
 	// Redux states
 	const { file, fileName, textareaInput, shouldRedirect } = props;
@@ -61,7 +63,7 @@ const InputHandle = (props) => {
 			}
 
 			// Handle POST request
-			const endpoint = 'http://localhost/api/upload'
+			const endpoint = ENDPOINT_ROOT + '/upload'
 			try {
 				const res = await axios.post(endpoint, formData, {
 					headers: {

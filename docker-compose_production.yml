@@ -23,7 +23,7 @@ services:
     ports:
       - '80:80'
     depends_on:
-      - rabbit
+      - prod_backend
     environment:
       - PORT=8080
     command: nginx -g "daemon off";
