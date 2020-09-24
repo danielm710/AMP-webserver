@@ -1,0 +1,91 @@
+.worker-status-header-container {
+	display: flex;
+	align-items: center;
+	text-align: left;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding: 10px 0px 10px 10px;
+	border: 5px;
+	border-style: double;
+	flex: 1 0 20%;
+}
+
+.worker-status-header {
+	font-weight: bold;
+	font-size: 18px;
+	margin: 0;
+	text-decoration: underline;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.worker-status {
+	display: inline-block;
+	margin-bottom: 0;
+	margin-left: 8px;
+	margin-right: 30px;
+	font-size: 18px;
+}
+
+.worker-message-container {
+	text-align: left;
+	border: 5px;
+	border-style: double;
+}
+
+.worker-message-item {
+	display: flex;
+	align-items: center;
+}
+
+.worker-message-current {
+	margin-left: 10px;
+	margin-right: 30px;
+	font-size: 18px;
+	/* breaks line at new line character */
+	white-space: pre-line;
+	word-wrap: break-word;
+	overflow-x: hidden;
+}
+
+.worker-message-prev {
+	margin-left: 10px;
+	margin-right: 30px;
+	font-size: 18px;
+	/* breaks line at new line character */
+	white-space: pre-line;
+	word-wrap: break-word;
+	overflow-x: hidden;
+	color: #989898;
+}
+
+.file-progressbar-wrapper {
+	margin: 50px auto;
+	width: 800px;
+	display: grid;
+	grid-template-columns: calc(100% - 50px) 50px;
+}
+
+.file-progressbar-container {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.file-progressbar {
+	width: 700px;
+	height: 20px;
+	background-color: white;
+	border-radius: 50px;
+	border: 2px solid #333;
+}
+
+.file-progressbar-filler {
+	background-color: #4DFF4D;
+	border-radius: 50px;
+	height: 20px;
+}
+
+.file-progressbar-label {
+	margin-right: 10px;
+}

@@ -3,7 +3,17 @@ import io from "socket.io-client";
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getLoadingStatus, getRedirectStatus } from '../../redux/actions/loadingAction'
+import {
+	getLoadingStatus,
+	getRedirectStatus,
+	updateWorkerMessages,
+	trackWorkerStatus,
+} from '../../redux/actions/remoteWorkerAction';
+
+import MessageHeader from './MessageHeader';
+import Messages from './Messages';
+
+import './TaskProgressStyle.css';
 
 function TaskProgress(props) {
 	let isLoading;
@@ -11,27 +21,38 @@ function TaskProgress(props) {
 	const [data, setData] = useState('');
 
 	// Redux action
-	const { getLoadingStatus, getRedirectStatus } = props;
+	const { getLoadingStatus, getRedirectStatus, updateWorkerMessages, trackWorkerStatus } = props;
 
-	//const endpoint = "http://localhost"
+	// Redux state
+	const { uid } = props;
 	
 	useEffect(() => {
-		const socket = io.connect();
+		if(uid) {
+			const socket = io.connect();
 
-		socket.on("error", err => {
-			console.log("SocketIO error")
-			console.log(err)
-		})
+			socket.emit("join", {room: uid})
 
-		socket.on("connect", () => {console.log("SocketIO connected!")})
+			socket.on("error", err => {
+				console.log("SocketIO error")
+				console.log(err)
+			})
 
-		socket.on("test", (data) => {setData(data.data)})
+			socket.on("connect", () => {console.log("SocketIO connected!")})
 
-		// Clean up
-		return () => {
-			socket.off("test")
-		}
-	}, [])
+			socket.on("test", (data) => {
+				setData(data.data)
+				updateWorkerMessages(data.data)
+				trackWorkerStatus(data.data)
+			})
+
+			// Clean up
+			return () => {
+				socket.emit("leave", {room: uid})
+				socket.off("test")
+				socket.disconnect()
+			}
+		}		
+	}, [uid])
 	
 	useEffect(() => {
 		isLoading = (data === 'Done!' || data === '') ? false : true
@@ -46,19 +67,22 @@ function TaskProgress(props) {
 	}, [data])
 	
 	return (
-		<div>
-			<p style={isLoading ? {display: 'block'} : {display: 'None'}}>Loading...</p>
-			<p>Data is "{data}"</p>
+		<div className="remote-worker-wrapper">
+			<MessageHeader/>
+			<Messages />
 		</div>
 	)
 }
 
 const mapStateToProps = state => ({
+	uid: state.fileUpload.uid,
 })
 
 const mapDispatchToProps = {
 	getLoadingStatus,
-	getRedirectStatus
+	getRedirectStatus,
+	updateWorkerMessages,
+	trackWorkerStatus,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TaskProgress);
