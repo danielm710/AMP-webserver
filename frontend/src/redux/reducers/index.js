@@ -1,10 +1,12 @@
 import { combineReducers } from 'redux';
-import requestReducer from './requestReducer'
-import fileUploadReducer from './fileUploadReducer'
-import textareaReducer from './textareaReducer'
+import remoteWorkerReducer from './remoteWorkerReducer';
+import fileUploadReducer from './fileUploadReducer';
+import textareaReducer from './textareaReducer';
+import optionReducer from './optionReducer';
 
 export default combineReducers({
-	request: requestReducer,
+	remoteWorker: remoteWorkerReducer,
 	fileUpload: fileUploadReducer,
-	textArea: textareaReducer
+	textArea: textareaReducer,
+	option: optionReducer,
 })
