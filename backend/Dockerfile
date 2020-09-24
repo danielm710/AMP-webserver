@@ -32,7 +32,8 @@ ENV PATH /backend/node_modules/.bin:$PATH
 
 # Install node modules
 COPY package.json /backend/package.json
+COPY package-lock.json /backend/package-lock.json
+COPY requirements.txt /backend/requirements.txt
 RUN npm install --silent
 
-COPY . ./
 RUN pip3 install -r requirements.txt
