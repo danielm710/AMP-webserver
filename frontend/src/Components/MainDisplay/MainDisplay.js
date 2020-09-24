@@ -47,7 +47,6 @@ function MainDisplay(props) {
 
 	useEffect(() => {
 		updateOptionList(OptionData);
-		setUid(uuid.v4());
 	}, [])
 
 	useEffect(() => {
@@ -68,6 +67,8 @@ function MainDisplay(props) {
 
 		(async () => {
 			const formData = new FormData();
+			const sessionID = uuid.v4()
+			setUid(sessionID);
 
 			// Input not specified
 			if(!file && textareaInput === '') {
@@ -77,7 +78,7 @@ function MainDisplay(props) {
 			}
 			// Pass UUID to server as a part of formData
 			// Can access it using req.body
-			formData.append('uid', uid);
+			formData.append('uid', sessionID);
 			// User uploads file. This will override textarea input
 			if(file) {
 				formData.append('file', file);
@@ -132,7 +133,7 @@ function MainDisplay(props) {
 
 	return(
 		<div>
-			<form onSubmit={handleSubmit}>
+			<form onSubmit={(e) => {resetRemoteWorker(); handleSubmit(e);}}>
 				<InputUploadMain />
 				<OptionMain />
 				<PredictButton />
