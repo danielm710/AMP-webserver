@@ -1,16 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { fileUploadHandleChange } from '../../redux/actions/fileUploadAction';
+import { resetFileInput } from '../../redux/actions/fileUploadAction';
 
 function FileUploadRemove(props) {
 	// Redux actions
-	const { fileUploadHandleChange } = props;
+	const { resetFileInput } = props;
 
 	return (
 		<span
 			className="reset-upload-button"
 			name="reset"
-			onClick={(e) => {fileUploadHandleChange(e)}}
+			onClick={resetFileInput}
 		> 
 			x
 		</span>
@@ -22,7 +22,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
-	fileUploadHandleChange
+	resetFileInput
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FileUploadRemove)

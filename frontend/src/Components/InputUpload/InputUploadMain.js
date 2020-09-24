@@ -1,125 +1,58 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import axios from 'axios';
 import uuid from 'uuid'
 
-import { resetFileInput } from '../../redux/actions/fileUploadAction';
-import { resetTextarea } from '../../redux/actions/textareaAction';
+import TextArea from './TextArea';
+import SampleInput from './SampleInput';
+import DropZone from './DropZone'
+import UploadedItemDisplay from './UploadedItemDisplay';
+import FileUploadProgressBar from '../Progress/FileUploadProgressBar';
 
-import FileUpload from './FileUpload'
-import TextArea from './TextArea'
-import TaskProgress from '../Progress/TaskProgress'
-
-import './InputUploadStyle.css'
-
-import { ENDPOINT_ROOT } from '../../Configs/api_config'
+import './InputUploadStyle.css';
 
 const InputHandle = (props) => {
 	// Redux states
-	const { file, fileName, textareaInput, shouldRedirect } = props;
+	const { fileProgress, isSubmitting } = props;
 
-	// Redux actions
-	const { resetFileInput } = props;
+	let submittedFiles;
+	if(isSubmitting === true && Object.keys(fileProgress).length > 0) {
+		submittedFiles = Object.keys(fileProgress).map(fileID => {
+			const progress = fileProgress[fileID].progress;
 
-	const [uid, setUid] = useState('')
-
-	useEffect(() => {
-		setUid(uuid.v4());
-	}, [])
-
-	useEffect(() => {
-		if(shouldRedirect === true) {
-			props.route.history.push('/result?uid=' + uid)
-		}
-
-		// Clear input field as a clean up
-		return(() => {
-			resetFileInput();
-			resetTextarea();
-		});
-	}, [shouldRedirect, uid, props.route.history])
-
-	const handleSubmit = async e => {
-		e.preventDefault();
-
-		(async () => {
-			const formData = new FormData();
-
-			// Input not specified
-			if(fileName === 'Choose File' && textareaInput === '') {
-				alert("Input is empty...");
-
-				return
-			}
-			// Pass UUID to server as a part of formData
-			// Can access it using req.body
-			formData.append('uid', uid);
-			// User uploads file. This will override textarea input
-			if(fileName !== 'Choose File') {
-				formData.append('file', file);
-			} else { // Sequence specified in the textarea
-				formData.append('seq', textareaInput)
-			}
-
-			// Handle POST request
-			const endpoint = ENDPOINT_ROOT + '/upload'
-			try {
-				const res = await axios.post(endpoint, formData, {
-					headers: {
-						'Content-Type': 'multiparts/form-data'
-					}
-				});
-				console.log(res.data)
-			} catch(err) {
-				// Request made, but the server responded with a status code
-				if(err.response) {
-					if(err.response.status === 500) {
-						alert('There was a problem with the server');
-					} // Client side problems (e.g. wrong input format) 
-					else if(err.response.status === 400) {
-						alert(err.response.data);
-					}
-				} else if (err.request) {
-					// The request was made but no response was received
-					console.log(err.request)
-				} else {
-					// Something else happened
-					console.log('Error', err.message);
-				}
-			}
-		})();
+			return(
+				<FileUploadProgressBar key={fileID} progress={progress} />
+			)
+		})
 	}
 
 	return (
 		<div>
-			<form onSubmit={handleSubmit}>
-				<TextArea />
-				<FileUpload />
-				<input 
-					type='submit'
-					value='Predict!'
-				/>
-			</form>
-			<TaskProgress/>
+			<div className="input-upload-wrapper">
+				<div className="input-upload-textarea-container">
+					<TextArea />
+					<SampleInput/>
+				</div>
+				<div className="input-upload-file-upload-container">
+					<DropZone />
+					<UploadedItemDisplay />
+				</div>
+			</div>
+			{submittedFiles}
 		</div>
 	)		
-}
-
-InputHandle.propTypes = {
-	shouldRedirect: PropTypes.bool.isRequired
 }
 
 const mapStateToProps = state => ({
 	file: state.fileUpload.file,
 	fileName: state.fileUpload.fileName,
+	uid: state.fileUpload.uid,
+	fileProgress: state.fileUpload.fileProgress,
+	isSubmitting: state.fileUpload.isSubmitting,
 	textareaInput: state.textArea.textareaInput,
-	shouldRedirect: state.request.shouldRedirect
 });
 
 const mapDispatchToProps = {
-	resetFileInput,
-	resetTextarea
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(InputHandle);
