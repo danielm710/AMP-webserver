@@ -1,18 +1,16 @@
 import React from 'react';
 
-import NavbarComponent from '../../Components/NavbarComponent'
-import Header from '../../Components/Header'
-import Footer from '../../Components/Footer'
-import InputUploadMain from '../../Components/InputUpload/InputUploadMain'
+import Header from '../../Components/Header';
+import Footer from '../../Components/Footer';
+import MainDisplay from '../../Components/MainDisplay/MainDisplay';
 
 import './Home.css'
 
 const Home = (props) => {
 	return(
-      <div className="container">
+      <div className="site-container">
         <Header />
-        <NavbarComponent />
-        <InputUploadMain route={props}/>
+        <MainDisplay route={props}/>
         <Footer />
       </div>
     )

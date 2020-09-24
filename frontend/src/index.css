@@ -15,12 +15,25 @@ a:active {
 	color: yellow;
 }
 
+.clickable {
+	text-decoration: underline;
+}
+
+.clickable:hover {
+	cursor: pointer;
+	color: #FF00FF;
+}
+
+.clickable:active {
+	cursor: pointer;
+	color: #FF0000 ;
+}
+
 .site-header h1 {
 	text-align: center;
-	background-image: linear-gradient(to right, red, yellow);
 	font-size: 50px;
 	font-family: Bookman, Georgia, "Time New Roman"; 
-	padding: 15px 0px 15px 0px;
+	margin: 15px 0px 15px 0px;
 }
 
 .amp-form {
@@ -29,10 +42,6 @@ a:active {
 
 .wrapper {
 	margin: 20px 0 20px 0;
-}
-
-textarea {
-	resize: none;
 }
 
 .site-footer {
@@ -51,4 +60,10 @@ textarea {
 .footer-block p {
 	padding-left: 10px;
 	margin-top: 20px;
+}
+
+.site-container {
+	width: 60%;
+	margin-right: auto;
+	margin-left: auto;
 }
