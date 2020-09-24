@@ -122,7 +122,7 @@ var getLoggingConfig = function(loggingConfigPath, uploadedDataPath) {
 
 // Edit template_logging.conf and write a new logging conf file
 // Edit template.cfg and write a new config file
-var getLuigiConfig = function(uploadedDataPath, loggingConfPath, luigiConfigPath, luigiOutDir) {
+var getLuigiConfig = function(uploadedDataPath, loggingConfPath, luigiConfigPath, luigiOutDir, userOptions) {
 	console.log("getLuigiConfig called!")
 	
 	return new Promise((resolve, reject) => {
@@ -137,6 +137,9 @@ var getLuigiConfig = function(uploadedDataPath, loggingConfPath, luigiConfigPath
 			var newData = data.replace(/<LOGGING_CONF_PATH>/g, loggingConfPath)
 								.replace(/<DATA_PATH>/g, uploadedDataPath)
 								.replace(/<BASE_OUT_DIR>/g, luigiOutDir)
+								.replace(/<MODEL_EVALUE>/g, userOptions.modelEvalue)
+								.replace(/<DOM_EVALUE>/g, userOptions.domainEvalue)
+								.replace(/<LENGTH_THRESHOLD>/g, userOptions.lengthThreshold)
 								.replace(/\\/g, "/");
 	
 			const uploadDir = path.dirname(uploadedDataPath);
@@ -166,8 +169,7 @@ var getLuigiConfig = function(uploadedDataPath, loggingConfPath, luigiConfigPath
 				})			
 			});
 		});
-	});
-		
+	});		
 }
 
 var runLuigi = function(scriptPath, newConfigPath) {
@@ -196,7 +198,7 @@ var checkLuigiDone = function(donePath) {
 	return new Promise((resolve, reject) => {
 		fs.access(donePath, fs.F_OK, err => {
 			if(err) {
-				reject(err);
+				reject("Something went wrong with the server...");
 			} else {
 				resolve(true)
 			}
