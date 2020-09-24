@@ -1,0 +1,8 @@
+.navbar-wrapper {
+	display: flex;
+	margin: 15px 0;
+}
+
+.navbar-item {
+	flex: 10% 0;
+}
