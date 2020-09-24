@@ -15,56 +15,75 @@ var io = server.io;
 
 router.use(cors());
 
+// Socket.io join room
+io.on('connection', socket => {
+  socket.on('join', (data) => {
+  	console.log("Socket joining room: ", data.room)
+  	socket.join(data.room)
+  	socket.to(data.room).emit('joined room')
+  });
+
+  socket.on('leave', (data) => {
+  	console.log("Socket leaving room: ", data.room)
+  	socket.leave(data.room)
+  })
+});
+
 // Establish RabbitMQ connection
 const amqp = require('amqplib/callback_api');
 const URL = 'amqp://admin:mypass@rabbit'
 let channel;
+const ampExchange = 'ampExchange';
+const progressUpdateQueue = 'progressUpdate';
+const pipelineQueue = 'pipeline';
+const progressBinding = 'progressUpdate';
+
 amqp.connect(URL, function (err, conn) {
 	conn.createChannel(function (err, ch) {
 		channel = ch;
 
-		const progressExchange = 'progress';
-		ch.assertExchange(progressExchange, 'fanout', {
+		ch.assertExchange(ampExchange, 'direct', {
 			durable: false
 		});
 
-		ch.assertQueue('', {
-			exclusive: true
-		}, function(err, q) {
-			if(err) {
-				throw err;
-			}
+		ch.assertQueue(progressUpdateQueue, {
+			exclusive: false
+		});
 
-			console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q.queue);
-			ch.bindQueue(q.queue, progressExchange, '');
+		ch.assertQueue(pipelineQueue, {
+			exclusive: false
+		});
 
-			ch.consume(q.queue, function(msg) {
-				if(msg.content) {
-					var data = JSON.parse(msg.content)
-					console.log(" [x] Received %s", data);
+		console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", progressUpdateQueue);
+		ch.bindQueue(progressUpdateQueue, ampExchange, progressBinding);
+		ch.prefetch(1);
+		ch.consume(progressUpdateQueue, function(msg) {
+			if(msg.content) {
+				var data = JSON.parse(msg.content)
+				console.log(" [x] Received %s", data);
 
-					if(data.result.message === "Done!") {
-						var predictionData = data.result.predictionData;
-						var uid = data.result.uid;
-						sendData(predictionData, uid);
-						io.emit('test', {data: data.result.message})
-					} else {
-						io.emit('test', {data: data.result.message})
-					}
+				if(data.result.message === "Done!") {
+					var predictionData = data.result.predictionData;
+					var uid = data.result.uid;
+					sendData(predictionData, uid);
+					io.sockets.in(uid).emit('test', {data: data.result.message})
+				} else {
+					var uid = data.result.uid;
+					io.sockets.in(uid).emit('test', {data: data.result.message})
 				}
-			}, {
-				noAck: true
-			})
+			}
+		}, {
+			noAck: true
 		});
 	}); 
 });
 
-const publishMessage = (exchange, data) => {
-  channel.assertExchange(exchange, 'fanout', {
+const publishMessage = (queue, exchange, data) => {
+  channel.assertExchange(exchange, 'direct', {
   	durable: false
   });
 
-  channel.publish(exchange, '', Buffer.from(JSON.stringify(data)));
+  channel.publish(exchange, queue, Buffer.from(JSON.stringify(data)));
 };
 
 var sendData = function(data, uid) {
@@ -85,16 +104,30 @@ var sendData = function(data, uid) {
 	*/
 }
 
-function send_to_worker(uid, scriptPath, donePath, predictionPath) {
+function send_to_worker(
+	uploadedDataPath,
+	loggingConfPath,
+	luigiConfigPath,
+	luigiOutDir,
+	userOptions,
+	uid,
+	scriptPath,
+	donePath,
+	predictionPath) {
+
 	var data = {
+		uploadedDataPath: uploadedDataPath,
+		loggingConfPath: loggingConfPath,
+		luigiConfigPath: luigiConfigPath,
+		luigiOutDir: luigiOutDir,
+		userOptions: userOptions,
 		uid: uid,
 		scriptPath: scriptPath,
 		donePath: donePath,
 		predictionPath: predictionPath
 	}
 	
-	taskExchange = "task";
-	publishMessage(taskExchange, data)
+	publishMessage(pipelineQueue, ampExchange, data)
 }
 
 // Additional server side file size check
@@ -125,6 +158,16 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 	let fileContent;
 	// Access UUID from the client side
 	const uid = req.body.uid;
+
+	// User specified options
+	const modelEvalue = req.body['Model E-value'];
+	const domainEvalue = req.body['Domain E-value'];
+	const lengthThreshold = req.body['Length threshold'];
+	const userOptions = {
+		modelEvalue: modelEvalue,
+		domainEvalue: domainEvalue,
+		lengthThreshold: lengthThreshold,
+	}
 
 	const AMPBaseDir = path.join('/pipeline', 'AMP-Predictor-Test');
 	const loggingConfigPath = path.join(AMPBaseDir, 'template_logging.conf');
@@ -160,9 +203,19 @@ router.post('/upload', fileUpload(fileUploadOption), (req, res) => {
 			if(isValidFasta === true) {
 				const uploadPath = await helper.moveFile(file, uploadDir, isUpload);
 				const paths = await helper.getLoggingConfig(loggingConfigPath, uploadPath);
-				const newConfigPath = await helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, luigiOutDir);
+				//const newConfigPath = await helper.getLuigiConfig(paths.uploadedDataPath, paths.loggingConfPath, luigiConfigPath, luigiOutDir, userOptions);
 
-				send_to_worker(uid, AMPBaseDir, donePath, predictionPath)
+				send_to_worker(
+					paths.uploadedDataPath,
+					paths.loggingConfPath,
+					luigiConfigPath,
+					luigiOutDir,
+					userOptions,
+					uid,
+					AMPBaseDir,
+					donePath,
+					predictionPath
+				)
 
 				//res.status(200).send(result)
 				res.status(200).send("Ok!");
