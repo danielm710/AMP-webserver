@@ -45,7 +45,7 @@ ResultMain.propTypes = {
 }
 
 const mapStateToProps = state => ({
-	predictionResult: state.request.data
+	
 })
 
 export default connect(mapStateToProps)(ResultMain);

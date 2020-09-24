@@ -1,5 +1,4 @@
 import React from "react"
-import Table from 'react-bootstrap/Table'
 import ReactTable from 'react-table'
 import 'react-table/react-table.css'
 
