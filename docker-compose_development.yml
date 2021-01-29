@@ -35,7 +35,7 @@ services:
       - ./log:/log # For logging
       - ./input:/input # Named volume
       - ./pipeline:/pipeline
-      - backend_node_module:/backend/node_modules
+      #- backend_node_module:/backend/node_modules
     depends_on:
       - rabbit
     restart: on-failure
@@ -53,7 +53,7 @@ services:
       - ./log:/log # For logging
       - ./input:/input # Named volume
       - ./pipeline:/pipeline
-      - backend_node_module:/backend/node_modules
+      #- backend_node_module:/backend/node_modules
     ports:
       - '5000:5000'
     depends_on:
