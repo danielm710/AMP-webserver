@@ -16,9 +16,8 @@ services:
     ports:
       - '15673:15672' # in case user has rabbitMQ installed on host
       - 5672:5672
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=mypass
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     healthcheck:
       test: [ "CMD", "nc", "-z", "localhost", "5672" ]
       interval: 5s
