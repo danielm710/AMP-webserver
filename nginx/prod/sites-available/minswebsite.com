@@ -10,8 +10,8 @@
 #}
 
 server {
-	listen 80;
-  	listen [::]:80;
+	listen 80 default_server;
+  	listen [::]:80 default_server;
 
     #server_name minswebsite.com www.minswebsite.com;
 
