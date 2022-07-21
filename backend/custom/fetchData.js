@@ -198,6 +198,7 @@ var checkLuigiDone = function(donePath) {
 	return new Promise((resolve, reject) => {
 		fs.access(donePath, fs.F_OK, err => {
 			if(err) {
+				console.log(err)
 				reject("Something went wrong with the server...");
 			} else {
 				resolve(true)
