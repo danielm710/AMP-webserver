@@ -54,7 +54,7 @@ services:
       - ./pipeline:/pipeline
       #- backend_node_module:/backend/node_modules
     ports:
-      - '5000:5000'
+      - '5001:5000'
     depends_on:
       - rabbit
     restart: on-failure
